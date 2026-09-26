@@ -1,0 +1,1378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diffraction Grating Light Angles</title>
+<style>
+  /* ---------- Tokens ---------- */
+
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --surface-2: #f3f2ee;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #6f6d68;
+    --grid: #e1e0d9;
+    --axis: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --accent: #2a78d6;
+    --accent-ink: #ffffff;
+    --critical: #d03b3b;
+    /* The figure is always drawn on black, like the workbook chart, so the beams can add as light. */
+    --plate: #000000;
+    --plate-edge: #000000;
+    --radius: 12px;
+    --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --surface-2: #232321;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #9a988f;
+      --grid: #2c2c2a;
+      --axis: #45443f;
+      --border: rgba(255, 255, 255, 0.10);
+      --accent: #3987e5;
+      --accent-ink: #ffffff;
+      --critical: #e36a6a;
+      --plate-edge: #2c2c2a;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #232321;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #9a988f;
+    --grid: #2c2c2a;
+    --axis: #45443f;
+    --border: rgba(255, 255, 255, 0.10);
+    --accent: #3987e5;
+    --accent-ink: #ffffff;
+    --critical: #e36a6a;
+    --plate-edge: #2c2c2a;
+  }
+
+  /* Presentation mode: stronger secondary text and rules so they survive a projector. */
+  html.present {
+    --text-secondary: #2f2e2b;
+    --text-muted: #4a4946;
+    --grid: #cfcec6;
+    --border: rgba(11, 11, 11, 0.20);
+  }
+  @media (prefers-color-scheme: dark) {
+    html.present:not([data-theme="light"]) {
+      --text-secondary: #e6e5dc;
+      --text-muted: #c3c2b7;
+      --grid: #3d3d3a;
+      --border: rgba(255, 255, 255, 0.22);
+    }
+  }
+  html.present[data-theme="dark"] {
+    --text-secondary: #e6e5dc;
+    --text-muted: #c3c2b7;
+    --grid: #3d3d3a;
+    --border: rgba(255, 255, 255, 0.22);
+  }
+
+  /* ---------- Base ---------- */
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; font-size: 16px; }
+  html.present { font-size: 20px; }
+  [hidden] { display: none !important; }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text-primary);
+    font: 0.9375rem/1.5 var(--font);
+  }
+
+  h1, h2, h3 { line-height: 1.2; margin: 0; }
+  h1 { font-size: 2.6rem; font-weight: 750; letter-spacing: -0.02em; line-height: 1.1; text-wrap: balance; }
+  h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.005em; }
+  h3 { font-size: 0.95rem; font-weight: 620; margin: 1rem 0 0.35rem; }
+
+  .site-header, main, .site-footer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .site-header { padding-top: 28px; padding-bottom: 12px; }
+  main { display: grid; gap: 16px; }
+
+  .title-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .view-btns { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+  .lede { margin: 12px 0 0; color: var(--text-secondary); max-width: 62ch; }
+
+  .eyebrow {
+    margin: 0 0 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+  /* Title rule in the three laser colors; it follows the wavelengths chosen below. */
+  .title-rule { display: flex; gap: 4px; width: 260px; max-width: 100%; margin-top: 12px; }
+  .title-rule span { flex: 1; height: 5px; border-radius: 1px; background: #001aff; }
+  .title-rule span:nth-child(2) { background: #50ff00; }
+  .title-rule span:nth-child(3) { background: #ff3000; }
+
+  .equation { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 18px; }
+  .eq-part { font-weight: 600; font-size: 1.35rem; color: var(--text-primary); }
+  .eq-hint { margin: 8px 0 0; font-size: 0.85rem; color: var(--text-muted); max-width: 90ch; }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- Cards ---------- */
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    min-width: 0;
+  }
+  .card-head { margin-bottom: 12px; }
+  .card-sub { margin: 4px 0 0; font-size: 0.85rem; color: var(--text-secondary); }
+
+  /* Block frames: solid = controls and figure, dashed = calculated results. */
+  .controls, .figure-card { border: 2px solid var(--text-muted); }
+  .results { border: 2px dashed var(--text-muted); }
+
+  .stage { display: grid; gap: 16px; }
+
+  /* ---------- Controls ---------- */
+
+  .sliders { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 28px; }
+  .control { min-width: 0; }
+  .control-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .control label, .control .label { font-weight: 600; }
+  .control output {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .control-sub { margin: 0; font-size: 0.82rem; color: var(--text-secondary); }
+
+  input[type="range"] { width: 100%; margin: 10px 0 4px; accent-color: var(--accent); height: 24px; }
+  input[type="range"]:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .control .toggle { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+  .control .toggle input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+  .laser.is-off .toggle { color: var(--text-muted); }
+
+  .lkey {
+    display: inline-block;
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px var(--border);
+  }
+
+  .num { display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; color: var(--text-secondary); }
+  .num input {
+    width: 5.6em;
+    padding: 4px 8px;
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--text-primary);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .num input:disabled { opacity: 0.5; }
+  .num input[aria-invalid="true"] { border-color: var(--critical); }
+  .num input#slitL { width: 6.4em; }
+
+  .presets { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 8px; }
+  .chip {
+    padding: 2px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+  }
+  .chip:hover { background: var(--surface-2); }
+  .chip[aria-pressed="true"] { background: var(--text-primary); color: var(--surface); border-color: transparent; }
+
+  .run-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--grid);
+  }
+  .run-note { font-size: 0.82rem; color: var(--text-muted); }
+  .mono-row {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--grid);
+  }
+  .white-note { margin-top: 10px; max-width: 80ch; }
+
+  .btn {
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface-2);
+    color: var(--text-primary);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn:hover { filter: brightness(0.97); }
+  .btn.ghost { background: transparent; font-weight: 500; font-size: 0.85rem; color: var(--text-secondary); white-space: nowrap; }
+  .btn.ghost[aria-pressed="true"] { background: var(--text-primary); color: var(--surface); border-color: transparent; }
+
+  .check { display: inline-flex; align-items: center; gap: 6px; font-size: 0.9rem; color: var(--text-secondary); cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+
+  /* ---------- Figure ---------- */
+
+  .plate { border-radius: 8px; overflow: hidden; background: var(--plate); border: 1px solid var(--plate-edge); }
+  #fig { display: block; width: 100%; height: 420px; touch-action: pan-y; }
+  #fig.probe-on { cursor: crosshair; }
+  #fig.turn { cursor: grab; }
+  #fig.turn:active { cursor: grabbing; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 18px;
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .lg { display: inline-flex; align-items: center; gap: 7px; }
+  /* Each key is a small black tile so it looks the way the line looks in the figure. */
+  .lg-tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 32px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--plate);
+    box-shadow: 0 0 0 1px var(--plate-edge);
+  }
+
+  /* ---------- Results ---------- */
+
+  .grid-2 { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; }
+  .readouts { display: flex; flex-direction: column; gap: 14px; }
+
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { padding: 5px 8px; text-align: right; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  th { color: var(--text-secondary); font-weight: 600; }
+  thead th:first-child, tbody th { text-align: left; }
+  tbody th { color: var(--text-primary); }
+  thead th .lkey { margin-right: 6px; vertical-align: -1px; }
+  tr.zero th, tr.zero td { background: var(--surface-2); }
+  .dim, tr.off { opacity: 0.4; }
+  .none { color: var(--text-muted); }
+  .card-foot { margin: 10px 0 0; font-size: 0.82rem; color: var(--text-muted); }
+
+  .ptable td.wide { text-align: left; width: 100%; }
+  .region { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); }
+  .band { display: block; height: 6px; margin-top: 4px; border-radius: 3px; background-color: var(--grid); }
+
+  .slit-ctl { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; border-top: 1px solid var(--grid); }
+  .meter-scale {
+    position: relative;
+    height: 16px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .meter-scale span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+  .meter-scale span:first-child { transform: none; }
+  .meter-scale span:last-child { transform: translateX(-100%); }
+
+  .live { margin: 0; font-size: 0.85rem; color: var(--text-secondary); }
+
+  .tile { padding-top: 10px; border-top: 1px solid var(--grid); }
+  .tile-label { display: block; font-size: 1.2rem; font-weight: 620; line-height: 1.25; color: var(--text-primary); }
+  .hero-value { display: block; font-size: 1.1rem; font-weight: 650; line-height: 1.2; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .tile-sub { display: block; font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ---------- Notes / footer ---------- */
+
+  .notes summary { cursor: pointer; font-size: 1.4rem; font-weight: 700; line-height: 1.2; }
+  .notes-body { max-width: 80ch; color: var(--text-secondary); font-size: 0.92rem; }
+  .notes-body p, .notes-body ul { margin: 0.3rem 0 0.6rem; }
+  .notes-body h3 { color: var(--text-primary); }
+
+  .site-footer { padding-top: 18px; padding-bottom: 32px; font-size: 0.8rem; color: var(--text-muted); }
+  .site-footer p { margin: 0; }
+
+  /* ---------- Presentation mode ---------- */
+
+  html.present .site-header, html.present main, html.present .site-footer { max-width: 1800px; }
+  html.present .lede, html.present .eq-hint, html.present .run-note,
+  html.present .control-sub:not(.keep), html.present .notes, html.present .site-footer { display: none; }
+  html.present .title-rule { width: 320px; height: auto; }
+  html.present .title-rule span { height: 6px; }
+
+  @media (min-width: 1100px) {
+    /* Figure beside the controls, and it stays in view while the controls scroll. */
+    html.present .stage { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); align-items: start; }
+    html.present .figure-card { order: -1; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+    html.present .sliders { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+    html.present .figure-card .mono-ctl { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 28px; }
+  }
+
+  /* ---------- Responsive ---------- */
+
+  @media (max-width: 980px) {
+    .sliders { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-2 { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .site-header, main, .site-footer { padding-left: 16px; padding-right: 16px; }
+    h1 { font-size: 2rem; }
+    .title-rule { width: 200px; }
+    .card { padding: 14px; }
+    .sliders { grid-template-columns: minmax(0, 1fr); }
+    .title-row { flex-direction: column; }
+    .view-btns { justify-content: flex-start; }
+  }
+</style>
+
+</head>
+<body>
+<header class="site-header">
+  <div class="title-row">
+    <div>
+      <p class="eyebrow">Optical Spectroscopy · Interactive</p>
+      <h1>Light Diffraction from a Grating</h1>
+      <div class="title-rule" aria-hidden="true"><span id="rule0"></span><span id="rule1"></span><span id="rule2"></span></div>
+      <p class="lede">How the incident angle, groove density and wavelength set the angle at which each diffraction order leaves a reflection grating, and which wavelengths an exit slit lets through.</p>
+    </div>
+    <div class="view-btns">
+      <button id="themeBtn" class="btn ghost" type="button" title="Switch between automatic, light and dark colors">Theme: auto</button>
+      <button id="presentBtn" class="btn ghost" type="button" aria-pressed="false" title="Larger text, controls and figure lines for a projector">Presentation: off</button>
+    </div>
+  </div>
+
+  <div class="equation">
+    <span class="eq-part" aria-label="m lambda equals d times sine theta plus sine phi"><i>m</i>λ = <i>d</i>(sin <i>θ</i> + sin <i>φ</i>)</span>
+  </div>
+  <p class="eq-hint"><i>m</i> diffraction order · λ wavelength · <i>d</i> groove spacing, 1/N · <i>θ</i> and <i>φ</i> incident and diffracted angles from the grating normal, with φ positive on the incident side</p>
+</header>
+
+<main>
+  <div class="stage">
+    <section class="card controls" aria-labelledby="ctlTitle">
+      <div class="card-head"><h2 id="ctlTitle">Grating and Light Sources</h2></div>
+      <div class="sliders">
+        <div class="control">
+          <div class="control-head"><label for="theta">Incident angle θ</label><output id="thetaOut" for="theta">3.0°</output></div>
+          <input type="range" id="theta" min="-80" max="80" step="0.5" value="3">
+          <p class="control-sub" id="thetaSub">Measured from the grating normal</p>
+        </div>
+        <div class="control">
+          <div class="control-head"><label for="grooves">Groove density</label><output id="groovesOut" for="grooves">400 /mm</output></div>
+          <input type="range" id="grooves" min="100" max="2400" step="50" value="400">
+          <p class="control-sub" id="dOut">d = 1/N = 2.500 µm = 2500 nm</p>
+        </div>
+        <div class="control">
+          <div class="control-head"><span class="label" id="ordLbl">Highest order shown</span><output id="ordOut">±3</output></div>
+          <div class="presets" role="group" aria-labelledby="ordLbl">
+            <button type="button" class="chip" data-order="1" aria-pressed="false">±1</button>
+            <button type="button" class="chip" data-order="2" aria-pressed="false">±2</button>
+            <button type="button" class="chip" data-order="3" aria-pressed="true">±3</button>
+          </div>
+          <p class="control-sub">Line weight marks the order: thick 1st, medium 2nd, thin 3rd</p>
+        </div>
+
+        <div class="control laser" id="l0">
+          <div class="control-head">
+            <label class="toggle" for="l0on"><input type="checkbox" id="l0on" checked><span class="lkey" id="l0sw"></span><span id="l0name">Blue laser</span></label>
+            <span class="num"><input type="number" id="l0nm" value="445" min="200" max="1100" step="0.1" inputmode="decimal" aria-label="Wavelength of laser 1 in nanometers"><span aria-hidden="true">nm</span></span>
+          </div>
+          <input type="range" id="l0sl" min="200" max="1100" step="0.1" value="445" aria-label="Wavelength of laser 1">
+          <p class="control-sub" id="l0sub">Blue diode laser</p>
+        </div>
+        <div class="control laser" id="l1">
+          <div class="control-head">
+            <label class="toggle" for="l1on"><input type="checkbox" id="l1on" checked><span class="lkey" id="l1sw"></span><span id="l1name">Green laser</span></label>
+            <span class="num"><input type="number" id="l1nm" value="532" min="200" max="1100" step="0.1" inputmode="decimal" aria-label="Wavelength of laser 2 in nanometers"><span aria-hidden="true">nm</span></span>
+          </div>
+          <input type="range" id="l1sl" min="200" max="1100" step="0.1" value="532" aria-label="Wavelength of laser 2">
+          <p class="control-sub" id="l1sub">Frequency-doubled Nd:YAG laser</p>
+        </div>
+        <div class="control laser" id="l2">
+          <div class="control-head">
+            <label class="toggle" for="l2on"><input type="checkbox" id="l2on" checked><span class="lkey" id="l2sw"></span><span id="l2name">Red laser</span></label>
+            <span class="num"><input type="number" id="l2nm" value="632.8" min="200" max="1100" step="0.1" inputmode="decimal" aria-label="Wavelength of laser 3 in nanometers"><span aria-hidden="true">nm</span></span>
+          </div>
+          <input type="range" id="l2sl" min="200" max="1100" step="0.1" value="632.8" aria-label="Wavelength of laser 3">
+          <p class="control-sub" id="l2sub">Helium–neon laser</p>
+        </div>
+      </div>
+
+      <div class="run-row">
+        <button type="button" class="btn" id="reset">Reset to workbook values</button>
+        <label class="check"><input type="checkbox" id="white">White light, 380–780 nm</label>
+        <label class="check"><input type="checkbox" id="probeOn" checked>Exit slit</label>
+        <span class="run-note">Workbook: θ = 3°, 400 grooves/mm, 445 / 532 / 632.8 nm</span>
+      </div>
+      <p class="control-sub keep white-note" id="whiteNote" hidden>Where orders overlap, their colors add. The 1st order’s 760–780 nm lands at the same angles as the 2nd order’s 380–390 nm, because mλ is the same.</p>
+    </section>
+
+    <section class="card figure-card" aria-labelledby="figTitle">
+      <div class="card-head">
+        <h2 id="figTitle">Diffraction from the Grating</h2>
+        <p class="card-sub" id="figSub">Angles are drawn to true scale. Click or drag in the figure to move the exit slit.</p>
+      </div>
+      <div class="plate"><canvas id="fig" role="img" aria-label="Ray diagram of light diffracting from a reflection grating"></canvas></div>
+      <div class="legend">
+        <span class="lg"><span class="lg-tile"><svg width="24" height="8" aria-hidden="true"><line x1="2" y1="4" x2="22" y2="4" stroke="#DFE3E8" stroke-width="4" stroke-linecap="round"/></svg></span>1st order</span>
+        <span class="lg"><span class="lg-tile"><svg width="24" height="8" aria-hidden="true"><line x1="2" y1="4" x2="22" y2="4" stroke="#DFE3E8" stroke-width="2.4" stroke-linecap="round"/></svg></span>2nd order</span>
+        <span class="lg"><span class="lg-tile"><svg width="24" height="8" aria-hidden="true"><line x1="2" y1="4" x2="22" y2="4" stroke="#DFE3E8" stroke-width="1.2" stroke-linecap="round"/></svg></span>3rd order</span>
+        <span class="lg"><span class="lg-tile"><svg width="24" height="8" aria-hidden="true"><line x1="2" y1="4" x2="22" y2="4" stroke="#DFE3E8" stroke-width="2.4" stroke-linecap="round"/></svg></span>+m, incident side</span>
+        <span class="lg"><span class="lg-tile"><svg width="24" height="8" aria-hidden="true"><line x1="0" y1="4" x2="24" y2="4" stroke="#DFE3E8" stroke-width="2.4" stroke-dasharray="7 4"/></svg></span>−m, far side</span>
+        <span class="lg"><span class="lg-tile"><svg width="24" height="8" aria-hidden="true"><line x1="2" y1="4" x2="22" y2="4" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round"/></svg></span>Incident beam and 0th order</span>
+        <span class="lg"><span class="lg-tile"><svg width="24" height="8" aria-hidden="true"><line x1="2" y1="4" x2="22" y2="4" stroke="#808080" stroke-width="2" stroke-dasharray="1.5 4" stroke-linecap="round"/></svg></span>Grating normal</span>
+        <span class="lg"><span class="lg-tile"><svg width="24" height="8" aria-hidden="true"><line x1="2" y1="4" x2="9" y2="4" stroke="#E6EAEF" stroke-width="3"/><line x1="15" y1="4" x2="22" y2="4" stroke="#E6EAEF" stroke-width="3"/></svg></span>Exit slit</span>
+      </div>
+
+      <div class="mono-row">
+        <label class="check"><input type="checkbox" id="monoOn">Monochromator mode: fixed entrance and exit slits, rotating grating</label>
+        <div class="sliders mono-ctl" id="monoCtl" hidden>
+          <div class="control">
+            <div class="control-head"><label for="psi">Grating rotation</label><output id="psiOut" for="psi">0.00°</output></div>
+            <input type="range" id="psi" min="-60" max="60" step="0.01" value="0">
+            <p class="control-sub keep" id="psiSub">Turned from where it started · ψ = 12.45° from the instrument axis, so θ = ψ + K and φ = ψ − K</p>
+          </div>
+          <div class="control">
+            <div class="control-head"><label for="k2">Included angle 2K</label><output id="k2Out" for="k2">−18.9°</output></div>
+            <input type="range" id="k2" min="-120" max="120" step="0.1" value="-18.9">
+            <p class="control-sub keep">Fixed by the instrument. Positive with the exit slit to the right of the entrance in the figure, negative with it to the left.</p>
+          </div>
+          <div class="control">
+            <div class="control-head">
+              <label for="monoNm">Wavelength at the exit slit</label>
+              <span class="num"><input type="number" id="monoNm" value="1063.3" min="0" step="0.1" inputmode="decimal" aria-describedby="monoSub"><span aria-hidden="true">nm</span></span>
+            </div>
+            <p class="control-sub keep" id="monoSub">1st order · mλ = 2d·cos K·sin ψ · type a wavelength to turn the grating to it</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="grid-2">
+    <section class="card results" aria-labelledby="anglesTitle">
+      <div class="card-head">
+        <h2 id="anglesTitle">Diffraction Angles</h2>
+        <p class="card-sub">φ = sin⁻¹(<i>m</i>λ/<i>d</i> − sin θ). A dash means that order can’t leave the grating, because |<i>m</i>λ/<i>d</i> − sin θ| would be greater than 1.</p>
+      </div>
+      <div class="table-scroll"><table id="angles"></table></div>
+    </section>
+
+    <section class="card results readouts" aria-labelledby="probeTitle">
+      <div>
+        <h2 id="probeTitle">Exit Slit</h2>
+        <p class="card-sub">Wavelengths that leave the grating toward the slit, from <i>m</i>λ = <i>d</i>(sin θ + sin φ)</p>
+      </div>
+      <div class="control">
+        <div class="control-head"><label for="probe">Slit angle φ</label><output id="probeAng" for="probe">21.9°</output></div>
+        <input type="range" id="probe" min="-85" max="85" step="0.1" value="21.9">
+        <p class="control-sub keep" id="probeSub" hidden>Set by the grating rotation: φ = ψ − K</p>
+      </div>
+      <label class="check"><input type="checkbox" id="slitOn">Adjustable slit width</label>
+      <div class="slit-ctl" id="slitCtl" hidden>
+        <div class="control">
+          <div class="control-head">
+            <label for="slitL">Distance from grating to exit slit</label>
+            <span class="num"><input type="number" id="slitL" value="250" min="1" max="100000" step="1" inputmode="decimal"><span aria-hidden="true">mm</span></span>
+          </div>
+        </div>
+        <div class="control">
+          <div class="control-head"><label for="slitW">Slit width w</label><output id="slitWOut" for="slitW slitL">1.0 mm</output></div>
+          <input type="range" id="slitW" min="0" max="1000" step="1" value="541" aria-valuetext="1.0 mm">
+          <div class="meter-scale" aria-hidden="true"><span style="left:0%">0.01 mm</span><span style="left:27.03%">0.1</span><span style="left:54.07%">1</span><span style="left:81.10%">10</span><span style="left:100%">50 mm</span></div>
+          <p class="control-sub keep" id="slitSpan">Δφ = 2·tan⁻¹(w/2L) = 0.229° · spans φ = 21.785° to 22.015°</p>
+        </div>
+      </div>
+      <div id="probeOut"></div>
+      <div class="tile" id="resBox" hidden>
+        <span class="tile-label">Resolution, R = λ/Δλ</span>
+        <span class="hero-value" id="resVal">—</span>
+        <span class="tile-sub">The same in every order at this slit angle</span>
+      </div>
+    </section>
+  </div>
+
+  <section class="card notes">
+    <details>
+      <summary>About the Model and the Figure</summary>
+      <div class="notes-body">
+        <h3>Grating equation</h3>
+        <p><i>m</i>λ = <i>d</i>(sin θ + sin φ), with groove spacing <i>d</i> = 1/N. Both angles are measured from the grating normal, and φ is positive on the same side as the incident beam, so the 0th order (the mirror reflection) leaves at φ = −θ. An order exists only when |<i>m</i>λ/<i>d</i> − sin θ| ≤ 1.</p>
+        <h3>Figure</h3>
+        <ul>
+          <li>Styled after the chart “Light Diffraction from Grating” in Diffraction Grating Light Angles.xlsm: white incident beam and 0th order, thick, medium and thin lines for the 1st, 2nd and 3rd orders, and dashed lines for negative orders.</li>
+          <li>Angles are drawn to true scale. The Excel chart’s axes stretch it sideways, which makes small angles look larger.</li>
+          <li>Beam colors are approximate screen colors for each wavelength. Ultraviolet and infrared lines are drawn gray.</li>
+        </ul>
+        <h3>White light</h3>
+        <p>Each order is drawn as a continuous 380–780 nm spectrum that dims toward both ends. Where orders overlap their colors add: 1st-order 760–780 nm leaves at the same angles as 2nd-order 380–390 nm, because <i>m</i>λ is the same.</p>
+        <h3>Exit slit</h3>
+        <ul>
+          <li>An ideal, zero-width slit at angle φ receives λ = <i>d</i>(sin θ + sin φ)/<i>m</i> from every order at once.</li>
+          <li>A slit of width <i>w</i> at distance <i>L</i>, perpendicular to the diffracted beam, spans Δφ = 2·tan⁻¹(<i>w</i>/2<i>L</i>). Each order then passes a band of width Δλ = <i>d</i>[sin(φ + Δφ/2) − sin(φ − Δφ/2)]/<i>m</i> ≈ <i>d</i>·cos φ·Δφ/<i>m</i>.</li>
+          <li>Resolution R = λ/Δλ = (sin θ + sin φ)/[sin(φ + Δφ/2) − sin(φ − Δφ/2)]. Because λ and Δλ both scale as 1/<i>m</i>, R at a fixed slit angle is the same in every order. A narrower slit, a longer distance to the slit, or a larger diffraction angle raises R.</li>
+          <li>The incident beam is treated as a collimated laser, so no entrance-slit image adds to the bandpass.</li>
+        </ul>
+        <h3>Monochromator mode</h3>
+        <ul>
+          <li>The entrance and exit slits stay fixed, an included angle 2K apart, and the grating turns on its mount by ψ from the instrument axis that bisects them. Then θ = ψ + K and φ = ψ − K.</li>
+          <li>Switching the mode on keeps the incident angle, the slit angle and the grating’s orientation you already have: 2K = θ − φ and ψ = (θ + φ)/2, and the grating stays flat. The Grating rotation slider then turns it up to 45° either way from there, adding the same angle to θ and φ, as long as both beams stay in front of the grating. Turning past the incident beam makes θ negative, with the beam arriving from the right of the normal. 2K is negative when the exit slit sits on the incident side, beyond the entrance; the layout is then the mirror image of the usual one.</li>
+          <li>Substituting into the grating equation gives <i>m</i>λ = 2<i>d</i>·cos K·sin ψ, the sine drive that tunes a scanning monochromator. The wavelength reaching the exit slit is proportional to sin ψ.</li>
+          <li>At ψ = 0 the 0th order, the mirror reflection, goes out the exit slit. K = 0 is the Littrow mount, where the diffracted light returns along the incident path.</li>
+          <li>In the figure the slits stay put and the grating, its normal and its angle scale turn together. The dashed instrument axis and the ψ arc show the angle the sine drive uses. The Diffraction Angles table still lists angles from the grating normal.</li>
+        </ul>
+        <h3>Presentation mode</h3>
+        <p>Enlarges text, controls and the figure’s lines and labels for a projector. On wide screens it puts the figure beside the controls and keeps it in view while you scroll, and it hides this section and the helper text.</p>
+      </div>
+    </details>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>Light Diffraction from a Grating · a teaching demonstration for optical spectroscopy, based on the chart “Light Diffraction from Grating” in Diffraction Grating Light Angles.xlsm.</p>
+</footer>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const root = document.documentElement;
+  const rad = a => a * Math.PI / 180;
+  const deg = r => r * 180 / Math.PI;
+  const MINUS = '−';
+  const UI = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+
+  const DEFAULTS = {
+    theta: 3, grooves: 400, maxOrder: 3, white: false, probeOn: true, probePhi: 21.9,
+    slitOn: false, slitMm: 1, slitL: 250,
+    // Monochromator values that match the default θ = 3° and φ = 21.9°. psi0 is ψ when the
+    // mode was switched on: the figure keeps that grating orientation flat.
+    mono: false, psi: 12.45, psi0: 12.45, k2: -18.9,
+    lasers: [{ on: true, nm: 445 }, { on: true, nm: 532 }, { on: true, nm: 632.8 }]
+  };
+  const S = JSON.parse(JSON.stringify(DEFAULTS));
+
+  // Monochromator mode: slits fixed 2K apart, grating turned by ψ from the axis between them,
+  // so θ = ψ + K and φ = ψ − K. 2K is negative when the exit slit is on the entrance side.
+  const PSI_LIMIT = 45, K2_MIN = -120, K2_MAX = 120;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  // Rotations within PSI_LIMIT of the starting orientation that keep both beams in front of
+  // the grating (|θ| ≤ 89° and |φ| ≤ 89°)
+  function psiRange() {
+    const K = S.k2 / 2;
+    return [Math.max(S.psi0 - PSI_LIMIT, -89 - K, K - 89), Math.min(S.psi0 + PSI_LIMIT, 89 - K, 89 + K)];
+  }
+  // Signed 1st-order wavelength sent to the exit slit: mλ = 2d·cos K·sin ψ (negative means m = −1)
+  const monoNm = () => 2 * (1e6 / S.grooves) * Math.cos(rad(S.k2 / 2)) * Math.sin(rad(S.psi));
+  // Switching modes keeps θ and φ: the instrument takes the geometry already on screen
+  function enterMono() {
+    S.k2 = clamp(Math.round((S.theta - S.probePhi) * 10) / 10, K2_MIN, K2_MAX);
+    S.psi = (S.theta + S.probePhi) / 2;
+    S.psi0 = S.psi;   // the grating starts flat in the figure
+  }
+  function leaveMono() {
+    S.theta = clamp(S.theta, -80, 80);
+    S.probePhi = clamp(S.probePhi, -85, 85);
+  }
+  function applyMono() {
+    if (!S.mono) return;
+    // Keep the slits in front of the grating as the included angle widens: |ψ| + |K| ≤ 89°
+    const kMax = Math.min(K2_MAX / 2, 89 - Math.abs(S.psi));
+    S.k2 = clamp(S.k2, -2 * kMax, 2 * kMax);
+    const [lo, hi] = psiRange();
+    S.psi = clamp(S.psi, lo, hi);
+    S.theta = S.psi + S.k2 / 2;
+    S.probePhi = S.psi - S.k2 / 2;
+  }
+
+  // Line weights echo the workbook chart: 3.5 pt, 2 pt and 0.5 pt for orders 1, 2 and 3.
+  const WIDTH = [0, 4, 2.4, 1.2];
+  const GLOW = [0, 10, 7, 5];
+  const FAN_ALPHA = [0, 0.75, 0.5, 0.34];
+
+  // Grating equation, solved for the diffraction angle. Returns null when the order does not exist.
+  function phi(m, nm) {
+    const s = m * nm * S.grooves / 1e6 - Math.sin(rad(S.theta));
+    return Math.abs(s) > 1 ? null : deg(Math.asin(s));
+  }
+
+  // Exit-slit width: the slider is logarithmic from 0.01 to 50 mm, snapped to two significant figures
+  const W_MIN = 0.01, W_MAX = 50, W_STEPS = 1000;
+  const mmFromSlider = v => +(W_MIN * Math.pow(W_MAX / W_MIN, v / W_STEPS)).toPrecision(2);
+  const sliderFromMm = w => Math.round(W_STEPS * Math.log(w / W_MIN) / Math.log(W_MAX / W_MIN));
+  // Angular width Δφ of a slit of width w at distance L, perpendicular to the central diffracted ray
+  const slitDeg = () => 2 * deg(Math.atan(S.slitMm / (2 * S.slitL)));
+
+  // Approximate visible-spectrum color (after Dan Bruton).
+  function spectral(nm) {
+    if (nm < 380 || nm > 780) return null;
+    let r = 0, g = 0, b = 0;
+    if (nm < 440) { r = (440 - nm) / 60; b = 1; }
+    else if (nm < 490) { g = (nm - 440) / 50; b = 1; }
+    else if (nm < 510) { g = 1; b = (510 - nm) / 20; }
+    else if (nm < 580) { r = (nm - 510) / 70; g = 1; }
+    else if (nm < 645) { r = 1; g = (645 - nm) / 65; }
+    else { r = 1; }
+    const f = nm < 420 ? 0.3 + 0.7 * (nm - 380) / 40 : nm > 700 ? 0.3 + 0.7 * (780 - nm) / 80 : 1;
+    return { r, g, b, f };
+  }
+  function rgbStr(c, k = 1, lift = 0, a = 1) {
+    const ch = v => Math.round(255 * (v * k * (1 - lift) + lift));
+    return a === 1 ? `rgb(${ch(c.r)},${ch(c.g)},${ch(c.b)})` : `rgba(${ch(c.r)},${ch(c.g)},${ch(c.b)},${a})`;
+  }
+  const INVISIBLE = '#9AA1AB';
+  const beamColor = nm => { const c = spectral(nm); return c ? rgbStr(c, Math.max(c.f, 0.65), 0.1) : INVISIBLE; };
+  const labelColor = nm => { const c = spectral(nm); return c ? rgbStr(c, Math.max(c.f, 0.8), 0.35) : INVISIBLE; };
+  const swatchColor = nm => { const c = spectral(nm); return c ? rgbStr(c) : INVISIBLE; };
+  function colorName(nm) {
+    if (nm < 380) return 'ultraviolet';
+    if (nm > 780) return 'infrared';
+    if (nm < 440) return 'violet';
+    if (nm < 490) return 'blue';
+    if (nm < 510) return 'cyan';
+    if (nm < 565) return 'green';
+    if (nm < 590) return 'yellow';
+    if (nm < 625) return 'orange';
+    return 'red';
+  }
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+  // Common laser lines, named under each laser's slider
+  const KNOWN_LINES = [
+    [405, 'Violet diode laser'], [445, 'Blue diode laser'], [488, 'Argon-ion laser'], [514.5, 'Argon-ion laser'],
+    [532, 'Frequency-doubled Nd:YAG laser'], [632.8, 'Helium–neon laser'], [650, 'Red diode laser'],
+    [785, 'Near-infrared diode laser'], [1064, 'Nd:YAG laser']
+  ];
+  function laserSub(nm) {
+    const k = KNOWN_LINES.find(([w]) => Math.abs(w - nm) < 0.05);
+    if (k) return k[1];
+    return nm < 380 ? 'Ultraviolet, not visible' : nm > 780 ? 'Infrared, not visible' : `Visible, ${colorName(nm)}`;
+  }
+
+  const fmtDeg = (v, dp = 2) => {
+    if (Math.abs(v) < 0.5 * Math.pow(10, -dp)) v = 0;
+    return (v < 0 ? MINUS : '') + Math.abs(v).toFixed(dp) + '°';
+  };
+  const ordLabel = m => m === 0 ? '0' : (m > 0 ? '+' : MINUS) + Math.abs(m);
+  const fmtNm = nm => String(Math.round(nm * 10) / 10);
+
+  /* ---------- Figure ---------- */
+  const cvs = $('fig');
+  const ctx = cvs.getContext('2d');
+  const box = cvs.parentElement;
+  let G = null;
+
+  function drawFigure() {
+    const W = box.clientWidth;
+    if (!W) return;
+    const present = root.classList.contains('present');
+    const P = present ? 1.35 : 1;       // text and spacing scale
+    const LW = present ? 1.4 : 1;       // beam width scale
+    const C = present
+      ? { arc: '#4A5159', tick: '#7A828C', grating: '#C4CAD1', deg: '#A9B0B9', slit: '#D2D7DD' }
+      : { arc: '#2C3138', tick: '#4B525B', grating: '#8A929C', deg: '#737B85', slit: '#AEB5BE' };
+
+    const mono = S.mono;
+    // Monochromator mode leaves room below the grating for a full PSI_LIMIT turn either way:
+    // the tilted grating, its angle scale and the labels of grazing orders all stay inside.
+    const M_TOP = 46 * P, M_SIDE = 70 * P, M_PAD = 36 * P, M_DIP = Math.sin(rad(PSI_LIMIT));
+    const H = mono
+      ? Math.round(Math.min(M_TOP + (W / 2 - M_SIDE) * (1 + M_DIP) + M_PAD, present ? 1000 : 800))
+      : Math.round(Math.min(W < 560 ? W * 0.74 : W * 0.56, present ? 900 : 560));
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const pw = Math.round(W * dpr), ph = Math.round(H * dpr);
+    if (cvs.width !== pw || cvs.height !== ph) { cvs.width = pw; cvs.height = ph; }
+    cvs.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
+
+    let cx = W / 2, cy, R;
+    if (mono) {
+      R = Math.max(80, Math.min(W / 2 - M_SIDE, (H - M_TOP - M_PAD) / (1 + M_DIP)));
+      cy = M_TOP + R;
+    } else {
+      cy = H - 46 * P;
+      R = Math.max(90, Math.min(W / 2 - 40 * P, cy - 46 * P));
+    }
+    G = { cx, cy, R };
+    // Angles a are measured from the grating normal; rot turns them into the drawing's frame.
+    // In monochromator mode the frame is the grating's starting orientation, so only the turn since then shows.
+    const turn = mono ? S.psi - S.psi0 : 0;
+    const rot = -turn;
+    const ptL = (A, r) => [cx - r * Math.sin(rad(A)), cy - r * Math.cos(rad(A))];
+    const pt = (a, r) => ptL(a + rot, r);
+    const ca = x => -Math.PI / 2 - rad(x + rot);   // grating angle -> canvas arc angle
+    const inside = (x, y) => x > 6 && x < W - 6 && y > 6 && y < H - 6;
+
+    // Protractor arc and ticks (they turn with the grating)
+    ctx.lineWidth = P;
+    ctx.strokeStyle = C.arc;
+    ctx.beginPath(); ctx.arc(cx, cy, R, ca(90), ca(-90)); ctx.stroke();
+    ctx.strokeStyle = C.tick;
+    ctx.beginPath();
+    for (let a = -90; a <= 90; a += 5) {
+      const len = (a % 30 === 0 ? 9 : a % 10 === 0 ? 6 : 3) * P;
+      const [x1, y1] = pt(a, R), [x2, y2] = pt(a, R + len);
+      ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+    }
+    ctx.stroke();
+
+    // Monochromator: fixed instrument axis and the grating's rotation ψ away from it
+    // The instrument axis bisects the fixed slits, at ψ from the grating normal
+    if (mono && Math.abs(S.psi) >= 0.05) {
+      const axis = S.psi0;                     // its fixed direction in the drawing
+      ctx.save();
+      ctx.strokeStyle = '#3B424B'; ctx.lineWidth = 1.25 * P; ctx.setLineDash([6 * P, 6 * P]);
+      const [ax, ay] = ptL(axis, R);
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ax, ay); ctx.stroke();
+      ctx.restore();
+      ctx.strokeStyle = '#9AA3AD'; ctx.lineWidth = 1.25 * P;
+      const caL = A => -Math.PI / 2 - rad(A);
+      ctx.beginPath(); ctx.arc(cx, cy, 92 * P, caL(axis), caL(axis - S.psi), S.psi < 0); ctx.stroke();
+      // Small angles: set the ψ label a little outside the arc so it clears the beams
+      const nudge = Math.abs(S.psi) < 10 ? 6 * Math.sign(S.psi) : 0;
+      const [qx, qy] = ptL(axis - S.psi / 2 - nudge, 108 * P);
+      ctx.font = `italic 600 ${Math.round(17 * P)}px ${UI}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineWidth = 4; ctx.strokeStyle = '#000'; ctx.strokeText('ψ', qx, qy);
+      ctx.fillStyle = '#C9CFD6'; ctx.fillText('ψ', qx, qy);
+    }
+
+    // Grating normal (dotted, as in the workbook chart)
+    ctx.save();
+    ctx.strokeStyle = '#808080'; ctx.lineWidth = 2 * P; ctx.lineCap = 'round'; ctx.setLineDash([1.5 * P, 5 * P]);
+    {
+      const [nx, ny] = pt(0, R);
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(nx, ny); ctx.stroke();
+    }
+    ctx.restore();
+
+    // Grating surface with substrate hatching, turned with the grating
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-rad(rot));
+    const gx0 = -R - 18, gx1 = R + 18;
+    ctx.strokeStyle = '#3F444B'; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = gx0 + 8; x <= gx1; x += 7) { ctx.moveTo(x, 2); ctx.lineTo(x - 7, 10); }
+    ctx.stroke();
+    ctx.fillStyle = '#8B9098';
+    ctx.fillRect(gx0, -1.5 * P, gx1 - gx0, 3 * P);
+    ctx.restore();
+    ctx.fillStyle = C.grating;
+    ctx.font = `${Math.round(12 * P)}px ${UI}`; ctx.textBaseline = 'alphabetic';
+    const gText = `${S.grooves} grooves/mm  ·  d = ${(1000 / S.grooves).toFixed(3)} µm`;
+    if (mono) {
+      ctx.textAlign = 'left';
+      ctx.fillText(gText, 14 * P, 22 * P);
+      ctx.fillText(`Included angle 2K = ${fmtDeg(S.k2, 1)}  ·  ψ = ${fmtDeg(S.psi, 2)}  ·  grating turned ${fmtDeg(turn, 2)}`, 14 * P, 40 * P);
+    } else {
+      ctx.textAlign = 'center';
+      ctx.fillText(gText, cx, cy + 30 * P);
+    }
+
+    function ray(a, color, w, dashed, glow) {
+      const [x, y] = pt(a, R);
+      ctx.save();
+      ctx.strokeStyle = color; ctx.lineWidth = w;
+      ctx.lineCap = dashed ? 'butt' : 'round';
+      ctx.setLineDash(dashed ? (w < 2 ? [5 * LW, 5 * LW] : [11 * LW, 7 * LW]) : []);
+      ctx.shadowColor = color; ctx.shadowBlur = glow;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke();
+      ctx.restore();
+    }
+
+    const labels = [];
+    const anyLaser = S.lasers.some(L => L.on);
+    ctx.globalCompositeOperation = 'lighter';
+
+    // Continuous 380–780 nm source. Each order is one wedge filled with a conic gradient
+    // whose color at every angle is the wavelength diffracted there. Brightness fades
+    // steadily toward both ends of the visible range.
+    if (S.white) {
+      const conic = typeof ctx.createConicGradient === 'function';
+      // Conic position of a grating angle, measured clockwise from straight down so that every
+      // beam direction (up to 150° either side of straight up) falls inside 0–1
+      const tOf = a => (Math.PI - rad(a + rot)) / (2 * Math.PI);
+      for (let k = 1; k <= S.maxOrder; k++) {
+        for (const m of [k, -k]) {
+          const pts = [];
+          for (let nm = 380; nm <= 780; nm += 2) {
+            const a = phi(m, nm);
+            if (a !== null) pts.push({ a, c: spectral(nm) });
+          }
+          if (pts.length < 2) continue;
+          const col = p => rgbStr(p.c, p.c.f, 0, FAN_ALPHA[k]);
+          const lo = Math.min(pts[0].a, pts[pts.length - 1].a), hi = Math.max(pts[0].a, pts[pts.length - 1].a);
+          if (conic) {
+            const g = ctx.createConicGradient(Math.PI / 2, cx, cy);
+            pts.forEach(p => g.addColorStop(tOf(p.a), col(p)));
+            ctx.fillStyle = g;
+            ctx.beginPath(); ctx.moveTo(cx, cy);
+            ctx.arc(cx, cy, R, ca(hi), ca(lo));
+            ctx.closePath(); ctx.fill();
+          } else {
+            for (let i = 1; i < pts.length; i++) {
+              ctx.fillStyle = col(pts[i]);
+              const [x1, y1] = pt(pts[i - 1].a, R), [x2, y2] = pt(pts[i].a, R);
+              ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x1, y1); ctx.lineTo(x2, y2); ctx.closePath(); ctx.fill();
+            }
+          }
+          if (!anyLaser) labels.push({ ang: (lo + hi) / 2, text: ordLabel(m), color: '#D4D8DD' });
+        }
+      }
+    }
+
+    // Laser orders
+    let beams = 0;
+    S.lasers.forEach(L => {
+      if (!L.on) return;
+      const col = beamColor(L.nm), lab = labelColor(L.nm);
+      for (let k = S.maxOrder; k >= 1; k--) {
+        for (const m of [k, -k]) {
+          const a = phi(m, L.nm);
+          if (a === null) continue;
+          ray(a, col, WIDTH[k] * LW, m < 0, GLOW[k] * LW);
+          labels.push({ ang: a, text: ordLabel(m), color: lab });
+          beams++;
+        }
+      }
+    });
+
+    // 0th order (specular reflection) and incident beam
+    ray(-S.theta, '#FFFFFF', 3 * LW, false, 8 * LW);
+    labels.push({ ang: -S.theta, text: '0', color: '#FFFFFF' });
+    ray(S.theta, '#FFFFFF', 3 * LW, false, 8 * LW);
+    ctx.globalCompositeOperation = 'source-over';
+
+    // Arrowhead on the incident beam, pointing at the grating
+    {
+      const [ix, iy] = pt(S.theta, R * 0.55);
+      const ul = Math.hypot(cx - ix, cy - iy);
+      const dx = (cx - ix) / ul, dy = (cy - iy) / ul, nx = -dy, ny = dx;
+      const s = P;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.moveTo(ix + dx * 8 * s, iy + dy * 8 * s);
+      ctx.lineTo(ix - dx * 6 * s + nx * 6 * s, iy - dy * 6 * s + ny * 6 * s);
+      ctx.lineTo(ix - dx * 6 * s - nx * 6 * s, iy - dy * 6 * s - ny * 6 * s);
+      ctx.closePath(); ctx.fill();
+    }
+
+    // Incident angle arc
+    if (Math.abs(S.theta) >= 0.5) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.lineWidth = 1.25 * P;
+      ctx.beginPath(); ctx.arc(cx, cy, 42 * P, ca(S.theta), ca(0), S.theta < 0); ctx.stroke();
+    }
+    {
+      const side = S.theta < 0 ? -1 : 1;
+      const la = Math.abs(S.theta) < 14 ? S.theta + 7 * side : S.theta / 2;
+      const [tx, ty] = pt(la, 62 * P);
+      ctx.font = `italic 600 ${Math.round(17 * P)}px ${UI}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineWidth = 4; ctx.strokeStyle = '#000'; ctx.strokeText('θ', tx, ty);
+      ctx.fillStyle = '#FFFFFF'; ctx.fillText('θ', tx, ty);
+    }
+
+    // Exit slit
+    if (S.probeOn) {
+      const a = S.probePhi;
+      const hw = S.slitOn ? slitDeg() / 2 : 0;
+      // Openings narrower than about 8 px are drawn like the ideal slit so the jaws stay readable
+      const wide = hw > 0 && rad(hw) * R >= 4 * P;
+      const dashed = (x) => {
+        const [ex, ey] = pt(x, R);
+        ctx.save();
+        ctx.strokeStyle = 'rgba(226,231,238,0.6)'; ctx.lineWidth = 1.25 * P; ctx.setLineDash([4 * P, 4 * P]);
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(ex, ey); ctx.stroke();
+        ctx.restore();
+      };
+      let jaws;
+      if (wide) {
+        // Slit of angular width Δφ: shade the opening, dash both edges, jaws run along the arc
+        const e1 = Math.max(-89.9, a - hw), e2 = Math.min(89.9, a + hw);
+        const j = deg(15 * P / R);
+        ctx.fillStyle = 'rgba(230,234,240,0.09)';
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, ca(e2), ca(e1)); ctx.closePath(); ctx.fill();
+        dashed(e1); dashed(e2);
+        jaws = () => {
+          ctx.beginPath(); ctx.arc(cx, cy, R, ca(e2 + j), ca(e2)); ctx.stroke();
+          ctx.beginPath(); ctx.arc(cx, cy, R, ca(e1), ca(e1 - j)); ctx.stroke();
+        };
+      } else {
+        dashed(a);
+        jaws = () => narrowJaws(a);
+      }
+      ctx.lineCap = 'butt';
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 7 * P; jaws();
+      ctx.strokeStyle = '#E6EAEF'; ctx.lineWidth = 3.5 * P; jaws();
+      // The slit's name joins the order labels on the ring outside the arc, clear of the beams
+      labels.push({ ang: a, text: mono ? 'exit slit' : 'slit', color: C.slit });
+    }
+
+    // Monochromator: the fixed entrance slit that the incident beam comes through
+    if (mono) {
+      ctx.lineCap = 'butt';
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 7 * P; narrowJaws(S.theta);
+      ctx.strokeStyle = '#E6EAEF'; ctx.lineWidth = 3.5 * P; narrowJaws(S.theta);
+      labels.push({ ang: S.theta, text: 'entrance slit', color: C.slit });
+    }
+
+    // Two short jaws across the beam at grating angle x, leaving a small gap
+    function narrowJaws(x) {
+      const [px, py] = pt(x, R);
+      const tx = Math.cos(rad(x + rot)), ty = -Math.sin(rad(x + rot));
+      const g0 = 4 * P, g1 = 15 * P;
+      ctx.beginPath();
+      ctx.moveTo(px + tx * g0, py + ty * g0); ctx.lineTo(px + tx * g1, py + ty * g1);
+      ctx.moveTo(px - tx * g0, py - ty * g0); ctx.lineTo(px - tx * g1, py - ty * g1);
+      ctx.stroke();
+    }
+
+    // Order labels, nudged apart along the arc so they never overlap
+    ctx.font = `600 ${Math.round(12 * P)}px ${UI}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const LH = 13 * P, RL = R + 15 * P;
+    labels.forEach(l => { l.w = ctx.measureText(l.text).width + 4 * P; l.pos = l.ang; });
+    labels.sort((a, b) => a.ang - b.ang);
+    // Extent of a label along the arc and out from it, from its direction on screen
+    const along = l => l.w * Math.abs(Math.cos(rad(l.pos + rot))) + LH * Math.abs(Math.sin(rad(l.pos + rot)));
+    for (let it = 0; it < 120; it++) {
+      let moved = false;
+      for (let i = 1; i < labels.length; i++) {
+        const A = labels[i - 1], B = labels[i];
+        const need = deg(((along(A) + along(B)) / 2 + 2) / RL);
+        const gap = B.pos - A.pos;
+        if (gap < need - 1e-6) { const p = (need - gap) / 2; A.pos -= p; B.pos += p; moved = true; }
+      }
+      labels.forEach(l => { l.pos = Math.max(-88, Math.min(88, l.pos)); });
+      if (!moved) break;
+    }
+    labels.forEach(l => {
+      const radial = l.w * Math.abs(Math.sin(rad(l.pos + rot))) + LH * Math.abs(Math.cos(rad(l.pos + rot)));
+      const [x, y] = pt(l.pos, R + 8 * P + radial / 2);
+      if (!inside(x, y)) return;
+      if (Math.abs(l.pos - l.ang) > 1) {
+        const [x1, y1] = pt(l.ang, R + 1), [x2, y2] = pt(l.pos, R + 7 * P);
+        ctx.strokeStyle = l.color; ctx.globalAlpha = 0.45; ctx.lineWidth = P;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+      ctx.fillStyle = l.color;
+      ctx.fillText(l.text, x, y);
+    });
+
+    // Degree scale, skipped wherever an order label sits close by
+    ctx.font = `${Math.round(11 * P)}px ${UI}`; ctx.fillStyle = C.deg;
+    for (const a of [-60, -30, 0, 30, 60]) {
+      if (labels.some(l => Math.abs(l.pos - a) < 5)) continue;
+      const [x, y] = pt(a, R + 34 * P);
+      if (!inside(x, y)) continue;
+      ctx.fillText(a === 0 ? '0°' : (a > 0 ? '+' : MINUS) + Math.abs(a) + '°', x, y);
+    }
+
+    cvs.classList.toggle('probe-on', S.probeOn && !mono);
+    cvs.classList.toggle('turn', mono);
+    cvs.setAttribute('aria-label',
+      (mono
+        ? `Monochromator with fixed entrance and exit slits ${S.k2}° apart and the grating turned ${S.psi.toFixed(2)}°. `
+        : '') +
+      `Ray diagram of a reflection grating with ${S.grooves} grooves per mm and a ${S.theta.toFixed(1)}° incident beam, ` +
+      `showing the 0th order and ${beams} laser diffraction orders. The Diffraction Angles table lists every angle.`);
+  }
+
+  /* ---------- Angles table ---------- */
+  function buildTable() {
+    let html = '<thead><tr><th scope="col">Order m</th>';
+    S.lasers.forEach(L => {
+      html += `<th scope="col" class="${L.on ? '' : 'dim'}"><span class="lkey" style="background:${swatchColor(L.nm)}"></span>${fmtNm(L.nm)} nm</th>`;
+    });
+    html += '</tr></thead><tbody>';
+    for (const m of [3, 2, 1, 0, -1, -2, -3]) {
+      const cls = [Math.abs(m) > S.maxOrder ? 'off' : '', m === 0 ? 'zero' : ''].join(' ').trim();
+      html += `<tr${cls ? ` class="${cls}"` : ''}><th scope="row">${ordLabel(m)}</th>`;
+      S.lasers.forEach(L => {
+        const a = phi(m, L.nm);
+        const cell = a === null
+          ? '<span class="none" title="No propagating order: |mλ/d − sin θ| > 1">—</span>'
+          : fmtDeg(a);
+        html += `<td${L.on ? '' : ' class="dim"'}>${cell}</td>`;
+      });
+      html += '</tr>';
+    }
+    $('angles').innerHTML = html + '</tbody>';
+  }
+
+  /* ---------- Exit slit readout ---------- */
+  // Spectrum strip for a wavelength band; ultraviolet and infrared parts stay neutral.
+  function bandGradient(lo, hi) {
+    const n = 16, stops = [];
+    for (let i = 0; i <= n; i++) {
+      const c = spectral(lo + (hi - lo) * i / n);
+      stops.push(`${c ? rgbStr(c) : 'transparent'} ${(100 * i / n).toFixed(1)}%`);
+    }
+    return `linear-gradient(to right, ${stops.join(', ')})`;
+  }
+  const fmtBand = v => v < 1 ? v.toPrecision(2) : v < 10 ? v.toFixed(2) : v.toFixed(1);
+  const bandDp = v => v < 0.1 ? 3 : v < 1 ? 2 : 1;
+  const fmtR = r => r >= 100 ? Math.round(r).toLocaleString('en-US') : r.toFixed(1);
+  const fmtMm = w => w.toPrecision(2);
+
+  function updateProbe() {
+    $('probeAng').textContent = fmtDeg(S.probePhi, 1);
+    $('slitCtl').hidden = !S.slitOn;
+    const dphi = slitDeg();
+    $('slitWOut').textContent = `${fmtMm(S.slitMm)} mm`;
+    $('slitW').setAttribute('aria-valuetext', `${fmtMm(S.slitMm)} mm`);
+    const st = Math.sin(rad(S.theta));
+    const d = 1e6 / S.grooves;
+    const out = $('probeOut'), res = $('resBox');
+    res.hidden = true;
+
+    // Ideal (zero-width) slit: one wavelength per order
+    if (!S.slitOn) {
+      const sum = st + Math.sin(rad(S.probePhi));
+      if (Math.abs(sum) < 1e-4) {
+        out.innerHTML = '<p class="live">Only the 0th order, the mirror reflection, leaves at this angle.</p>';
+        return;
+      }
+      const sgn = Math.sign(sum);
+      let html = '<div class="table-scroll"><table class="ptable"><thead><tr>' +
+        '<th scope="col">Order</th><th scope="col">Wavelength</th><th scope="col">Region</th></tr></thead><tbody>';
+      for (const k of [1, 2, 3]) {
+        const m = sgn * k, nm = d * sum / m;
+        const vis = nm >= 380 && nm <= 780;
+        const region = vis
+          ? `<span class="region"><span class="lkey" style="background:${swatchColor(nm)}"></span>${colorName(nm)}</span>`
+          : `<span class="region">${colorName(nm)}</span>`;
+        html += `<tr><th scope="row">${ordLabel(m)}</th><td>${nm.toFixed(1)} nm</td><td>${region}</td></tr>`;
+      }
+      out.innerHTML = html + '</tbody></table></div>';
+      return;
+    }
+
+    // Slit of angular width Δφ: each order passes a band of wavelengths
+    const hw = dphi / 2;
+    const e1 = Math.max(-89.9, S.probePhi - hw), e2 = Math.min(89.9, S.probePhi + hw);
+    const spanDp = dphi < 0.05 ? 4 : dphi < 1 ? 3 : 2;
+    $('slitSpan').textContent = `Δφ = 2·tan⁻¹(w/2L) = ${dphi.toPrecision(3)}° · spans φ = ${fmtDeg(e1, spanDp)} to ${fmtDeg(e2, spanDp)}`;
+    const s1 = st + Math.sin(rad(e1)), s2 = st + Math.sin(rad(e2));
+    const sc = st + Math.sin(rad(S.probePhi));
+    if (s1 <= 0 && s2 >= 0) {
+      out.innerHTML = `<p class="live">The slit covers the 0th-order reflection at φ = ${fmtDeg(-S.theta, 1)}, so light of every wavelength passes through it.</p>`;
+      return;
+    }
+    const sgn = Math.sign(sc);
+    let html = '<div class="table-scroll"><table class="ptable"><thead><tr>' +
+      '<th scope="col">Order</th><th scope="col" style="text-align:left">Passes through the slit</th><th scope="col">Δλ</th>' +
+      '</tr></thead><tbody>';
+    for (const k of [1, 2, 3]) {
+      const m = sgn * k;
+      const la = d * s1 / m, lb = d * s2 / m;
+      const lo = Math.min(la, lb), hi = Math.max(la, lb);
+      const dp = bandDp(hi - lo);
+      html += `<tr><th scope="row">${ordLabel(m)}</th>` +
+        `<td class="wide">${lo.toFixed(dp)} – ${hi.toFixed(dp)} nm<span class="band" style="background-image:${bandGradient(lo, hi)}"></span></td>` +
+        `<td>${fmtBand(hi - lo)} nm</td></tr>`;
+    }
+    out.innerHTML = html + '</tbody></table></div>';
+
+    // R = λ/Δλ = (sin θ + sin φ) / (sin φ₂ − sin φ₁), identical for every order
+    $('resVal').textContent = fmtR(Math.abs(sc) / (s2 - s1));
+    res.hidden = false;
+  }
+
+  function readouts() {
+    $('thetaOut').textContent = S.theta.toFixed(1) + '°';
+    $('groovesOut').textContent = `${S.grooves} /mm`;
+    $('dOut').textContent = `d = 1/N = ${(1000 / S.grooves).toFixed(3)} µm = ${+(1e6 / S.grooves).toFixed(1)} nm`;
+    $('ordOut').textContent = '±' + S.maxOrder;
+    document.querySelectorAll('[data-order]').forEach(b =>
+      b.setAttribute('aria-pressed', String(+b.dataset.order === S.maxOrder)));
+    $('whiteNote').hidden = !S.white;
+
+    // Monochromator mode: θ and the slit angle follow the grating rotation
+    const mono = S.mono;
+    $('monoCtl').hidden = !mono;
+    $('theta').disabled = mono;
+    $('probe').disabled = mono;
+    $('theta').value = S.theta;
+    $('probe').value = S.probePhi;
+    $('thetaSub').textContent = mono ? 'Set by the grating rotation: θ = ψ + K' : 'Measured from the grating normal';
+    $('probeSub').hidden = !mono;
+    $('figSub').textContent = mono
+      ? 'The entrance and exit slits stay fixed while the grating turns. Drag in the figure to rotate the grating.'
+      : 'Angles are drawn to true scale. Click or drag in the figure to move the exit slit.';
+    // The rotation slider reads the turn from the starting orientation, where the grating was flat
+    const psiEl = $('psi');
+    const [pLo, pHi] = psiRange();
+    psiEl.min = pLo - S.psi0;
+    psiEl.max = pHi - S.psi0;
+    psiEl.value = S.psi - S.psi0;
+    $('psiOut').textContent = fmtDeg(S.psi - S.psi0, 2);
+    $('psiSub').textContent = `Turned from where it started · ψ = ${fmtDeg(S.psi, 2)} from the instrument axis, so θ = ψ + K and φ = ψ − K`;
+    $('k2').value = S.k2;
+    $('k2Out').textContent = fmtDeg(S.k2, 1);
+    const nmIn = $('monoNm');
+    const lam = monoNm();
+    if (document.activeElement !== nmIn) {
+      nmIn.value = Math.abs(lam).toFixed(1);
+      nmIn.removeAttribute('aria-invalid');
+    }
+    const reach = 2 * (1e6 / S.grooves) * Math.cos(rad(S.k2 / 2)) * Math.sin(rad(Math.max(Math.abs(pLo), Math.abs(pHi))));
+    $('monoSub').textContent = `1st order (m = ${lam < 0 ? MINUS : '+'}1) · mλ = 2d·cos K·sin ψ · this grating reaches up to ${Math.round(reach)} nm · type a wavelength to turn the grating to it`;
+
+    S.lasers.forEach((L, i) => {
+      const col = swatchColor(L.nm);
+      $(`l${i}sw`).style.background = col;
+      $(`rule${i}`).style.background = col;
+      $(`l${i}name`).textContent = `${cap(colorName(L.nm))} laser`;
+      $(`l${i}sub`).textContent = laserSub(L.nm);
+      $(`l${i}`).classList.toggle('is-off', !L.on);
+      $(`l${i}sl`).disabled = !L.on;
+      $(`l${i}nm`).disabled = !L.on;
+    });
+  }
+
+  function render() { applyMono(); readouts(); drawFigure(); buildTable(); updateProbe(); }
+
+  /* ---------- Controls ---------- */
+  const validNm = v => isFinite(v) && v >= 200 && v <= 1100;
+  const validL = v => isFinite(v) && v > 0 && v <= 100000;
+
+  function readControls() {
+    S.theta = +$('theta').value;
+    S.grooves = +$('grooves').value;
+    S.lasers.forEach((L, i) => {
+      L.on = $(`l${i}on`).checked;
+      const v = parseFloat($(`l${i}nm`).value);
+      L.nm = validNm(v) ? v : +$(`l${i}sl`).value;
+    });
+    S.white = $('white').checked;
+    S.probeOn = $('probeOn').checked;
+    S.probePhi = +$('probe').value;
+    S.slitOn = $('slitOn').checked;
+    S.slitMm = mmFromSlider(+$('slitW').value);
+    const L = parseFloat($('slitL').value);
+    if (validL(L)) S.slitL = L;
+    S.mono = $('monoOn').checked;
+    S.k2 = +$('k2').value;
+    S.psi = S.psi0 + +$('psi').value;
+  }
+
+  function syncControls() {
+    $('theta').value = S.theta;
+    $('grooves').value = S.grooves;
+    S.lasers.forEach((L, i) => {
+      $(`l${i}on`).checked = L.on;
+      const inp = $(`l${i}nm`);
+      inp.value = L.nm;
+      inp.removeAttribute('aria-invalid');
+      $(`l${i}sl`).value = L.nm;
+    });
+    $('white').checked = S.white;
+    $('probeOn').checked = S.probeOn;
+    $('probe').value = S.probePhi;
+    $('slitOn').checked = S.slitOn;
+    $('slitW').value = sliderFromMm(S.slitMm);
+    $('slitL').value = S.slitL;
+    $('slitL').removeAttribute('aria-invalid');
+    $('monoOn').checked = S.mono;
+    $('k2').value = S.k2;
+    $('psi').value = S.psi - S.psi0;
+  }
+
+  $('theta').addEventListener('input', e => { S.theta = +e.target.value; render(); });
+  $('grooves').addEventListener('input', e => { S.grooves = +e.target.value; render(); });
+  document.querySelectorAll('[data-order]').forEach(b =>
+    b.addEventListener('click', () => { S.maxOrder = +b.dataset.order; render(); }));
+  S.lasers.forEach((L, i) => {
+    $(`l${i}on`).addEventListener('change', e => { L.on = e.target.checked; render(); });
+    const inp = $(`l${i}nm`), sl = $(`l${i}sl`);
+    inp.addEventListener('input', () => {
+      const v = parseFloat(inp.value);
+      if (validNm(v)) { L.nm = v; sl.value = v; inp.removeAttribute('aria-invalid'); render(); }
+      else inp.setAttribute('aria-invalid', 'true');
+    });
+    inp.addEventListener('change', () => { inp.value = L.nm; inp.removeAttribute('aria-invalid'); });
+    sl.addEventListener('input', () => {
+      L.nm = +sl.value;
+      inp.value = L.nm;
+      inp.removeAttribute('aria-invalid');
+      render();
+    });
+  });
+  $('white').addEventListener('change', e => { S.white = e.target.checked; render(); });
+  $('probeOn').addEventListener('change', e => { S.probeOn = e.target.checked; render(); });
+  $('probe').addEventListener('input', e => { S.probePhi = +e.target.value; render(); });
+  $('slitOn').addEventListener('change', e => { S.slitOn = e.target.checked; render(); });
+  $('slitW').addEventListener('input', e => { S.slitMm = mmFromSlider(+e.target.value); render(); });
+  {
+    const inp = $('slitL');
+    inp.addEventListener('input', () => {
+      const v = parseFloat(inp.value);
+      if (validL(v)) { S.slitL = v; inp.removeAttribute('aria-invalid'); render(); }
+      else inp.setAttribute('aria-invalid', 'true');
+    });
+    inp.addEventListener('change', () => { inp.value = S.slitL; inp.removeAttribute('aria-invalid'); });
+  }
+  $('monoOn').addEventListener('change', e => {
+    S.mono = e.target.checked;
+    if (S.mono) enterMono(); else leaveMono();
+    render();
+  });
+  $('psi').addEventListener('input', e => { S.psi = S.psi0 + +e.target.value; render(); });
+  $('k2').addEventListener('input', e => { S.k2 = +e.target.value; render(); });
+  {
+    // Type a wavelength and the grating turns so its 1st order reaches the exit slit
+    const inp = $('monoNm');
+    inp.addEventListener('input', () => {
+      const v = parseFloat(inp.value);
+      const s = v / (2 * (1e6 / S.grooves) * Math.cos(rad(S.k2 / 2)));
+      // Stay on the same side of zero order: m = +1 for ψ ≥ 0, m = −1 for ψ < 0
+      const psi = isFinite(v) && v >= 0 && s <= 1 ? (S.psi < 0 ? -1 : 1) * deg(Math.asin(s)) : NaN;
+      const [lo, hi] = psiRange();
+      if (psi >= lo && psi <= hi) { S.psi = psi; inp.removeAttribute('aria-invalid'); render(); }
+      else inp.setAttribute('aria-invalid', 'true');
+    });
+    inp.addEventListener('change', () => { inp.value = Math.abs(monoNm()).toFixed(1); inp.removeAttribute('aria-invalid'); });
+  }
+  $('reset').addEventListener('click', () => {
+    Object.assign(S, JSON.parse(JSON.stringify(DEFAULTS)));
+    syncControls();
+    render();
+  });
+
+  // Pointer direction from the grating centre, in degrees (positive to the left of straight up)
+  function pointerAngle(e) {
+    if (!G) return null;
+    const r = cvs.getBoundingClientRect();
+    const dx = G.cx - (e.clientX - r.left), dy = G.cy - (e.clientY - r.top);
+    if (Math.hypot(dx, dy) < 12) return null;
+    return { a: deg(Math.atan2(dx, dy)), below: dy < -4 };
+  }
+  // Normal view: click or drag to place the exit slit
+  function probeFromPointer(e) {
+    const p = pointerAngle(e);
+    if (!p || p.below) return false;
+    S.probePhi = Math.max(-85, Math.min(85, Math.round(p.a * 10) / 10));
+    render();
+    return true;
+  }
+  // Monochromator: drag around the grating to turn it, like turning its mount
+  let drag = null;
+  function turnFromPointer(e) {
+    const p = pointerAngle(e);
+    if (!p) return;
+    let da = p.a - drag.a0;
+    if (da > 180) da -= 360;
+    if (da < -180) da += 360;
+    const [lo, hi] = psiRange();
+    S.psi = clamp(drag.psi0 - da, lo, hi);
+    render();
+  }
+  cvs.addEventListener('pointerdown', e => {
+    if (S.mono) {
+      const p = pointerAngle(e);
+      if (!p) return;
+      drag = { a0: p.a, psi0: S.psi, turn: true };
+      cvs.setPointerCapture(e.pointerId);
+    } else if (S.probeOn && probeFromPointer(e)) {
+      drag = { turn: false };
+      cvs.setPointerCapture(e.pointerId);
+    }
+  });
+  cvs.addEventListener('pointermove', e => {
+    if (!drag) return;
+    if (drag.turn) turnFromPointer(e);
+    else probeFromPointer(e);
+  });
+  cvs.addEventListener('pointerup', () => { drag = null; });
+  cvs.addEventListener('pointercancel', () => { drag = null; });
+
+  /* ---------- Theme and presentation mode ---------- */
+  // "auto" follows the system, or the theme the page's host has already chosen.
+  const hostTheme = root.getAttribute('data-theme');
+  const THEMES = ['auto', 'light', 'dark'];
+  let theme = 'auto';
+  const store = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* storage unavailable */ } };
+  const recall = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+
+  function applyTheme(name) {
+    theme = THEMES.includes(name) ? name : 'auto';
+    if (theme === 'auto') {
+      if (hostTheme) root.setAttribute('data-theme', hostTheme);
+      else root.removeAttribute('data-theme');
+    } else {
+      root.setAttribute('data-theme', theme);
+    }
+    $('themeBtn').textContent = 'Theme: ' + theme;
+    store('dg-theme', theme);
+  }
+  function applyPresent(on) {
+    root.classList.toggle('present', on);
+    const b = $('presentBtn');
+    b.setAttribute('aria-pressed', String(on));
+    b.textContent = 'Presentation: ' + (on ? 'on' : 'off');
+    store('dg-present', on ? '1' : '0');
+    drawFigure();
+  }
+  $('themeBtn').addEventListener('click', () => applyTheme(THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length]));
+  $('presentBtn').addEventListener('click', () => applyPresent(!root.classList.contains('present')));
+
+  let lastW = 0;
+  new ResizeObserver(() => {
+    const w = box.clientWidth;
+    if (w !== lastW) { lastW = w; drawFigure(); }
+  }).observe(box);
+
+  applyTheme(recall('dg-theme') || 'auto');
+  readControls();
+  syncControls();
+  applyPresent(recall('dg-present') === '1');
+  render();
+})();
+</script>
+
+</body>
+</html>
